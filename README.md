@@ -1,50 +1,42 @@
 # HeartSense firmware
 
-MicroPython firmware for the HeartSense magnetic-field meter (Raspberry Pi Pico).
+This is the code that runs on the Pico for my HeartSense magnetic field meter.
 
-## What it does
-- Reads total magnetic field strength from the MMC5603 magnetometer.
-- Shows a smooth, scrollable menu on the 128x128 OLED, driven by the ANO wheel
-  (turn to scroll, press to select, left to go back).
-- Live field screen: big uT readout, bar, green/red status LED, buzzer alert
-  when the field is high.
-- Calibrate screen: hard-iron calibration (rotate the device while it samples).
-- About screen.
+## what it does
 
-## Files
-- `main.py`     - runs on power-up; hardware setup + main menu loop
-- `config.py`   - all pin numbers and I2C addresses (from the board netlist)
-- `magnetometer.py` - MMC5603 driver, SET/RESET + hard-iron calibration
-- `oled.py`     - SH1107 128x128 OLED driver (framebuffer based)
-- `ano_wheel.py`- Adafruit ANO seesaw encoder driver (wheel + 5 buttons)
-- `outputs.py`  - piezo buzzer (PWM) and NeoPixel status LED
-- `ui.py`       - smooth eased-scrolling menu + scaled text drawing
-- `screens.py`  - live reading, calibrate and about screens
+- reads the magnetic field strength off the MMC5603 sensor
+- shows a menu on the little OLED that you scroll through with the ANO wheel
+  (spin to move, press in to pick, press left to go back)
+- Live Field screen: shows the field as a big number in uT, a bar, and a
+  green/red light. if the field gets too high it turns red and beeps
+- Calibrate screen: you spin the device around and it figures out the offset
+  from nearby metal so the readings are more accurate
+- About screen, nothing exciting
 
-## Installing
-Copy every `.py` file in this folder to the root of the Pico's MicroPython
-filesystem (e.g. with Thonny or `mpremote`). `main.py` runs automatically at
-power-on.
+## the files
 
-Requires a MicroPython build with the `neopixel` and `framebuf` modules (the
-standard Pico build has both).
+- `main.py` - runs when it turns on, sets everything up and runs the menu
+- `config.py` - all the pin numbers and addresses in one place
+- `magnetometer.py` - talks to the MMC5603 sensor
+- `oled.py` - draws to the screen
+- `ano_wheel.py` - reads the scroll wheel and its buttons
+- `outputs.py` - the buzzer and the RGB led
+- `ui.py` - the smooth scrolling menu
+- `screens.py` - the live/calibrate/about screens
 
-## Pin wiring (from the PCB)
-| Signal        | Pico pin        |
-|---------------|-----------------|
-| Buzzer        | GPIO2 (pin 4)   |
-| NeoPixel DIN  | GPIO3 (pin 5)   |
-| I2C SDA       | GPIO4 (pin 6)   |
-| I2C SCL       | GPIO5 (pin 7)   |
+## putting it on the Pico
 
-All three I2C devices (magnetometer 0x30, OLED 0x3C, ANO wheel 0x36) share the
-one bus.
+copy all the .py files onto the Pico (I use Thonny). main.py runs by itself
+when you plug it in. you need a MicroPython build that has neopixel and
+framebuf but the normal Pico one does.
 
-## Notes / things to check on real hardware
-- OLED controller is assumed to be SH1107. If the display stays blank or looks
-  shifted, the init sequence in `oled.py` may need small tweaks for your exact
-  panel.
-- The ANO wheel's button-to-pin mapping and seesaw address (0x36) are the
-  Adafruit defaults; confirm against your breakout.
-- Scaled text rebuilds a small framebuffer per character. If the live screen
-  feels slow, pre-render the digits once (noted in `ui.py`).
+## how it's wired
+
+| thing        | Pico pin      |
+|--------------|---------------|
+| buzzer       | GP2 (pin 4)   |
+| neopixel     | GP3 (pin 5)   |
+| I2C SDA      | GP4 (pin 6)   |
+| I2C SCL      | GP5 (pin 7)   |
+
+the sensor, OLED and wheel all share the same two I2C wires.
